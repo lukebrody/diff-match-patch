@@ -1711,7 +1711,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   [text getCharacters:textCharacters range:NSMakeRange(0, text.length)];
 
   // Highest score beyond which we give up.
-  double score_threshold = Match_Threshold
+  double score_threshold = Match_Threshold;
   NSUInteger best_loc = NSNotFound;
 
   // Initialise the bit arrays.
