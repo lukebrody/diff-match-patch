@@ -1705,7 +1705,10 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
            @"Pattern too long for this application.");
 
   // Initialise the alphabet.
-  NSMutableDictionary *s = [self match_alphabet:pattern];
+  NSUInteger *s = [self match_alphabet:pattern];
+  
+  unichar *textCharacters = malloc(text.length * sizeof(unichar));
+  [text getCharacters:textCharacters range:NSMakeRange(0, text.length)];
 
   // Highest score beyond which we give up.
   double score_threshold = Match_Threshold;
@@ -1755,11 +1758,10 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
     for (NSUInteger j = finish; j >= start; j--) {
       NSUInteger charMatch;
-      if (text.length <= j - 1 || ![s diff_containsObjectForUnicharKey:[text characterAtIndex:(j - 1)]]) {
-        // Out of range.
-        charMatch = 0;
+      if (j - 1 < text.length) {
+        charMatch = s[textCharacters[j - 1]];
       } else {
-        charMatch = [s diff_unsignedIntegerForUnicharKey:[text characterAtIndex:(j - 1)]];
+        charMatch = 0;
       }
       if (d == 0) {
         // First pass: exact match.
@@ -1804,6 +1806,9 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   if (last_rd != NULL) {
     free(last_rd);
   }
+  
+  free(s);
+  free(textCharacters);
 
   return best_loc;
 }
@@ -1840,38 +1845,16 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * @return Hash of character locations
  *     (NSMutableDictionary: keys:NSString/unichar, values:NSNumber/NSUInteger).
  */
-- (NSMutableDictionary *)match_alphabet:(NSString *)pattern;
+- (NSUInteger *)match_alphabet:(NSString *)pattern;
 {
-  NSMutableDictionary *s = [NSMutableDictionary dictionary];
-  CFStringRef str = (CFStringRef)pattern;
-  CFStringInlineBuffer inlineBuffer;
-  CFIndex length;
-  CFIndex cnt;
-
-  length = CFStringGetLength(str);
-  CFStringInitInlineBuffer(str, &inlineBuffer, CFRangeMake(0, length));
-
-  UniChar ch;
-  CFStringRef c;
-  for (cnt = 0; cnt < length; cnt++) {
-    ch = CFStringGetCharacterFromInlineBuffer(&inlineBuffer, cnt);
-    c = diff_CFStringCreateFromUnichar(ch);
-    if (![s diff_containsObjectForKey:(NSString *)c]) {
-      [s diff_setUnsignedIntegerValue:0 forKey:(NSString *)c];
-    }
-    CFRelease(c);
+  NSUInteger *result = calloc(SHRT_MAX, sizeof(NSUInteger));
+  
+  for (NSUInteger i = 0; i < pattern.length; i ++) {
+    unichar c = [pattern characterAtIndex:i];
+    result[c] = result[c] | (1 << (pattern.length - i - 1));
   }
 
-  NSUInteger i = 0;
-  for (cnt = 0; cnt < length; cnt++) {
-    ch = CFStringGetCharacterFromInlineBuffer(&inlineBuffer, cnt);
-    c = diff_CFStringCreateFromUnichar(ch);
-    NSUInteger value = [s diff_unsignedIntegerForKey:(NSString *)c] | (1 << (pattern.length - i - 1));
-    [s diff_setUnsignedIntegerValue:value forKey:(NSString *)c];
-    i++;
-    CFRelease(c);
-  }
-  return s;
+  return result;
 }
 
 
