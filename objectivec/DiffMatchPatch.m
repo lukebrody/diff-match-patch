@@ -278,7 +278,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
     Patch_DeleteThreshold = 0.5f;
     Patch_Margin = 4;
 
-    Match_MaxBits = 32;
+    Match_MaxBits = 64;
   }
 
   return self;
