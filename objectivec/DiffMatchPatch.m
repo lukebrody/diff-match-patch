@@ -1711,23 +1711,11 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   [text getCharacters:textCharacters range:NSMakeRange(0, text.length)];
 
   // Highest score beyond which we give up.
-  double score_threshold = Match_Threshold;
-  // Is there a nearby exact match? (speedup)
-  NSUInteger best_loc = [text rangeOfString:pattern options:NSLiteralSearch range:NSMakeRange(loc, text.length - loc)].location;
-  if (best_loc != NSNotFound) {
-    score_threshold = MIN([self match_bitapScoreForErrorCount:0 location:best_loc near:loc pattern:pattern], score_threshold);
-    // What about in the other direction? (speedup)
-    NSUInteger searchRangeLoc = MIN(loc + pattern.length, text.length);
-    NSRange searchRange = NSMakeRange(0, searchRangeLoc);
-    best_loc = [text rangeOfString:pattern options:(NSLiteralSearch | NSBackwardsSearch) range:searchRange].location;
-    if (best_loc != NSNotFound) {
-      score_threshold = MIN([self match_bitapScoreForErrorCount:0 location:best_loc near:loc pattern:pattern], score_threshold);
-    }
-  }
+  double score_threshold = Match_Threshold
+  NSUInteger best_loc = NSNotFound;
 
   // Initialise the bit arrays.
   NSUInteger matchmask = 1 << (pattern.length - 1);
-  best_loc = NSNotFound;
 
   NSUInteger bin_min, bin_mid;
   NSUInteger bin_max = pattern.length + text.length;

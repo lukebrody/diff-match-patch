@@ -134,7 +134,7 @@ typedef enum {
 - (NSString *)diff_toDelta:(NSMutableArray *)diffs;
 - (NSMutableArray *)diff_fromDeltaWithText:(NSString *)text1 andDelta:(NSString *)delta error:(NSError **)error;
 
-- (NSUInteger)match_mainForText:(id)text pattern:(NSString *)pattern near:(NSUInteger)loc;
+- (NSUInteger)match_mainForText:(NSObject *)text pattern:(NSString *)pattern near:(NSUInteger)loc;
 - (NSUInteger *)match_alphabet:(NSString *)pattern;
 
 - (NSMutableArray *)patch_makeFromOldString:(NSString *)text1 andNewString:(NSString *)text2;
